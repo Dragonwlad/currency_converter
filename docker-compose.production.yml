@@ -1,0 +1,22 @@
+version: '3'
+
+volumes:
+  static_prod:
+
+services:
+
+  backend:
+    image: dragonwlad/stripe_case
+    env_file: .env
+    volumes:
+      - static_prod:/static
+
+  gateway:
+    container_name: stripe_case_gateway
+    image: dragonwlad/stripe_case_gateway
+    volumes:
+      - static_prod:/staticfiles/
+    ports:
+      - 5000:80
+    depends_on:
+      - backend
