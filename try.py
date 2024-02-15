@@ -113,6 +113,7 @@ valuete = valuete[0:len(valuete)-1]
 # print(valuete)
 
 url = f'https://min-api.cryptocompare.com/data/pricemultifull?fsyms={valuete}&tsyms=USD'
+url_cb = 'https://www.cbr-xml-daily.ru/daily_json.js'
 print(url)
 
 # x = map(lambda *args: args, [1, 2], [3, 4])
@@ -134,7 +135,7 @@ def invert(func: Callable) -> Callable:
 
     return wrapper
 
- 
+
 @invert
 def square(numbers: list) -> list:
     return [i**2 for i in numbers]
