@@ -31,6 +31,6 @@ class EchangeRateToUsd(models.Model):
     currency = models.ForeignKey(Currency,
                                  related_name='echangerate',
                                  on_delete=models.CASCADE)
-    rate = models.FloatField(verbose_name='Он же PRICE')
+    rate = models.FloatField(verbose_name='Он же PRICE',)
     flowrate24 = models.FloatField(verbose_name='Он же CHANGE24HOUR')
     last_update = models.DateTimeField(auto_now_add=True, editable=False)
