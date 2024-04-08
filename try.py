@@ -104,13 +104,13 @@ currency_from_crypto = {'THB', 'SOL', 'TRY', 'NZD', 'SGD', 'CZK', 'ARB', 'HUF',
                         'STX', 'CNY', 'IDR', 'TMT', 'GMT', 'RUB', 'BRL',
                         'GEL', 'APT', 'ADA', 'WSB', 'NEAR'
                         }
-
+iso_list_for_crypto = 'TRY,NOK,FDUSD,WBTC,HKD,SEK,INJ,CAD,GBP,AED,CNY,EGP,GEL,EUR,ICP,GMT,SEI,ZAR,THB,AUD,UAH,LDO,DOGE,SGD,INR,TUSD,SUI,UZS,USDT,SHIB,ENS,CHF,BGN,BONK,LTC,IDR,RON,MDL,APT,USDC,AMD,KGS,ADA,OP,BRL,MATIC,LINK,WSB,NZD,TIA,BTC,ETC,DKK,AVAX,VND,KZT,STX,TRX,NEAR,ARB,BNB,TJS,FIL,RUB,TMT,JPY,XDR,CZK,MANTLE,DOT,KRW,PEOPLE,HUF,BCH,AZN,BYN,PLN,ETH,USD,XRP,QAR,BSV,RSD,SOL'
 valuete = ''
 
-for key in currency_from_crypto.keys():
+for key in currency_from_crypto:
     valuete += key + ','
 valuete = valuete[0:len(valuete)-1]
-# print(valuete)
+print(valuete)
 
 url = f'https://min-api.cryptocompare.com/data/pricemultifull?fsyms={valuete}&tsyms=USD'
 url_cb = 'https://www.cbr-xml-daily.ru/daily_json.js'

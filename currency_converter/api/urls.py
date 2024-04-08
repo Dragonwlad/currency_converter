@@ -9,7 +9,8 @@ router.register('currencies', views.CurrencyViewSet, basename='currencies')
 app_name = 'api'
 
 urlpatterns = [
-    path('getcurrencies/', views.currency_list),
+    path('get-currencies/', views.currency_list),
+    path('create-currencies/', views.create_currency),
     path('', include(router.urls), )
 
 ]
