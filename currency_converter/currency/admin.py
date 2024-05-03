@@ -11,3 +11,6 @@ class EchangeRateToUsdInLine(admin.TabularInline):
 @admin.register(Currency)
 class Currency(admin.ModelAdmin):
     inlines = [EchangeRateToUsdInLine, ]
+
+
+admin.site.register(EchangeRateToUsd)

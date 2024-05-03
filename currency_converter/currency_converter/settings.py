@@ -10,7 +10,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('SECRET_KEY', default='django-insecure-secret_key')
 
-DEBUG = os.getenv('DEBUG', default='False') == 'True'
+DEBUG = True # os.getenv('DEBUG', default='False') == 'True'
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS',
                           default='127.0.0.1,localhost').split(',')
@@ -27,10 +27,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'django_apscheduler',
     'users.apps.UsersConfig',
     'services.apps.ServicesConfig',
     'api.apps.ApiConfig',
     'currency.apps.CurrencyConfig',
+    'scheduler.apps.SchedulerConfig',
+
 ]
 
 MIDDLEWARE = [
@@ -121,12 +124,14 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
-STATIC_ROOT = BASE_DIR / 'collected_static'
+STATIC_ROOT = BASE_DIR / '/collected_static'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 10240
 
 
 REST_FRAMEWORK = {
@@ -138,21 +143,8 @@ REST_FRAMEWORK = {
     ],
 }
 
-# Celery settings
+# APSCHEDULER settings
 
-# CELERY_BROKER_URL = 'redis://localhost:6379/0'
-# CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
-# CELERY_TASK_TRACK_STARTED = True
-# CELERY_TASK_TIME_LIMIT = 30 * 60
-# CELERY_ACCEPT_CONTENT = ['application/json']
-# CELERY_RESULT_SERIALIZER = 'json'
-# CELERY_TASK_SERIALIZER = 'json'
-# CELERY_TIMEZONE = 'Europe/Moscow'
+APSCHEDULER_DATETIME_FORMAT = "N j, Y, f:s a"
 
-
-# CELERY_BEAT_SCHEDULE = {
-#     'backup_database': {
-#         'task': 'services.tasks.import_recipe_from_vk_task',
-#         'schedule': crontab(hour=RECIPE_IMPORT_HOURS, minute=0),
-#     },
-# }
+APSCHEDULER_RUN_NOW_TIMEOUT = 25  # Seconds

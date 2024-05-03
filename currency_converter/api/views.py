@@ -1,117 +1,101 @@
 import requests
 import json
-# from pprint import pprint
-# from django.shortcuts import render
-from django.db.models import Max, OuterRef, Subquery, Prefetch
-from rest_framework import status, serializers, viewsets
+
+from rest_framework import status, viewsets
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
-from currency.models import Currency
-from api.serializers import CurrencyListSerializer, EchangeRateToUsdListSerializer
+from api.serializers import CurrencyListSerializer, EchangeRateToUsdListSerializer, CurrencyDetailSerializer
 from currency.models import Currency, EchangeRateToUsd
-from currency_converter.constans import CRYPTO, FIAT, TYPE_CURRENCY, CRYPTO_URL
+from currency_converter.constans import CRYPTO, FIAT, TYPE_CURRENCY, CRYPTO_URL, FIAT_URL, FIAT_FROM_CRYPTOCOMPARE
 
-# from iso4217 import Currency
 
 
 @api_view(['GET', ])
-def currency_list(request):
-    '''Эндпоинт для запроса курса валют, парсинга и записи в БД.'''
-    valuete = ''
+def update_or_create_crypto(request):
+    '''
+    Эндпоинт для запроса курса валют, парсинга и записи в БД.
+    '''
+    values = ''
     for key in CRYPTO.keys():
-        valuete += key + ','
-    valuete = valuete[0:len(valuete)-1]
-    url = CRYPTO_URL.replace('ISO_LIST_VALUTE', valuete)
-
+        values += key + ','
+    values = values[0:len(values)-1]
+    url = CRYPTO_URL.replace('ISO_LIST_VALUTE', values)
+    currencyes = None
     try:
         json_currencyes_from_api = requests.get(url).text
         currencyes = json.loads(json_currencyes_from_api)
-        raw = currencyes.get('RAW', None)
-        print(raw['BTC'])
+        currencyes = currencyes.get('RAW', None)
     except Exception as error:
         print('error', error)
 
-    if raw:
-        bulk_list_echangeateo_usd = []
-        for valute, usd_currency in raw.items():
-            currency_info = usd_currency.get('USD', None)
-            current_cur = Currency.objects.get_or_create(
-                name=CRYPTO[valute],
-                code=valute,
-                url_image=currency_info['IMAGEURL'],
-                type='CRYPTO'
-                )
-            current_echange = EchangeRateToUsd(
-                    currency=current_cur[0],
-                    rate=currency_info['PRICE'],
-                    flowrate24=currency_info['CHANGE24HOUR'],
-                    last_update=currency_info['LASTUPDATE'],
-                )
-            # print(current_cur, currency_info['PRICE'], currency_info['CHANGE24HOUR'], currency_info['LASTUPDATE'],)
-            bulk_list_echangeateo_usd.append(current_echange)
+    if not currencyes:
+        return Response({'status': 'empty'}, status=status.HTTP_204_NO_CONTENT)
 
-        bulk_list_echangeateo_usd = EchangeRateToUsd.objects.bulk_create(bulk_list_echangeateo_usd,)
-    # print(bulk_list_echangeateo_usd)
+    bulk_list_change_to_usd = []
+    for valute, usd_currency in currencyes.items():
+        currency, received = Currency.objects.get_or_create(code=valute)
+        currency_info = usd_currency.get('USD', None)
+        if not received:
+            currency.name = CRYPTO[valute]
+            currency.url_image = currency_info['IMAGEURL']
+            currency.type = TYPE_CURRENCY[1][0]
 
-        return Response({'status': 'okk'}, status=status.HTTP_200_OK)
+        current_change = EchangeRateToUsd(
+            currency=currency,
+            rate=currency_info['PRICE'],
+            flowrate24=currency_info['CHANGE24HOUR'],
+        )
+        bulk_list_change_to_usd.append(current_change)
 
-    return Response({'status': 'empty'}, status=status.HTTP_204_NO_CONTENT)
+    EchangeRateToUsd.objects.bulk_create(bulk_list_change_to_usd, )
+
+    return Response({'status': 'okk'}, status=status.HTTP_200_OK)
 
 
 @api_view(['GET', ])
-def create_currency(request):
-    '''Эндпоинт для запроса валют и записи их в БД.'''
-    valuete = ''
-    for key in CRYPTO:
-        valuete += key + ','
-    url = CRYPTO_URL.replace('ISO_LIST_VALUTE', valuete[0:len(valuete)-1])
+def update_or_create_fiat(request):
+    '''
+    Эндпоинт для запроса курса валют, парсинга и записи в БД.
+    '''
+    currencies = None
     try:
-        json_currencyes_from_api = requests.get(url).text
-        # print(json_currencyes_from_api)
-        currencyes = json.loads(json_currencyes_from_api)
-        raw = currencyes.get('RAW', None)
-        # print(type(raw['THB']))
-        print(raw['BTC'])
+        json_currencies_from_api = requests.get(FIAT_URL).text
+        currencies = json.loads(json_currencies_from_api)
+        currencies = currencies.get('Valute', None)
     except Exception as error:
-        print('error', error)
+        print('Ошибка при получении курса валют:', error)
 
-    if raw:
-        bulk_list_currency = []
-        for valute, usd_currency in raw.items():
-            currency_info = usd_currency.get('USD', None)
-            current_cur = Currency(
-                    name=ISO_TO_NAME['valute'],
-                    code=valute,
-                    url_image=currency_info['IMAGEURL'],
-                )
-            bulk_list_currency.append(current_cur)
-        bulk_list_currency = Currency.objects.bulk_create(bulk_list_currency)
-        bulk_list_currency.save()
-        return Response(
-            {'Status': 'Валюты созданы'},
-            status=status.HTTP_200_OK)
+    if not currencies:
+        return Response({'no_currencies': 'Ошибка при получении курса валют'}, status=status.HTTP_204_NO_CONTENT)
 
-    return Response(
-            {'Status': 'Данные не были получены'},
-            status=status.HTTP_204_NO_CONTENT)
+    bulk_list_exchangeable = []
+    for valute in currencies.values():
+        current_cur = Currency.objects.update_or_create(
+            name=FIAT[valute['CharCode']],
+            name_ru=valute['Name'],
+            code=valute['CharCode'],
+            url_image=None,
+            type=TYPE_CURRENCY[0][0]
+            )
+        current_change = EchangeRateToUsd(
+                currency=current_cur[0],
+                rate=valute['Value'],
+                flowrate24=abs(valute['Previous'] - valute['Value']),
+            )
+        bulk_list_exchangeable.append(current_change)
 
+
+    return Response({'status': 'okk'}, status=status.HTTP_200_OK)
 
 
 class CurrencyViewSet(viewsets.ModelViewSet):
     queryset = Currency.objects.all()
     serializer_class = CurrencyListSerializer
-    http_method_names = ('get', )
 
-
-    # def get_queryset(self):
-    #     latest_exchange_rates = EchangeRateToUsd.objects.values('currency').annotate(
-    #         latest_update=Max('last_update')
-    #     )
-    #
-    #     # Создаем подзапрос с помощью метода Prefetch для выбора только последнего обновления для каждой валюты
-    #     prefetch = Prefetch('echangerate', queryset=latest_exchange_rates, to_attr='latest_echangerate')
-    #
-    #     # Затем используем этот подзапрос в основном queryset
-    #     queryset = Currency.objects.prefetch_related(prefetch)
-    #
-    #     return queryset
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            if self.action == 'list':
+                return CurrencyListSerializer
+            elif self.action == 'retrieve':
+                return CurrencyDetailSerializer
+        return self.serializer_class
