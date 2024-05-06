@@ -28,8 +28,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'django_apscheduler',
+    'drf_yasg',
     'users.apps.UsersConfig',
-    'services.apps.ServicesConfig',
     'api.apps.ApiConfig',
     'currency.apps.CurrencyConfig',
     'scheduler.apps.SchedulerConfig',
@@ -143,8 +143,19 @@ REST_FRAMEWORK = {
     ],
 }
 
-# APSCHEDULER settings
+# APSCHEDULER SETTINGS
 
 APSCHEDULER_DATETIME_FORMAT = "N j, Y, f:s a"
 
 APSCHEDULER_RUN_NOW_TIMEOUT = 25  # Seconds
+
+
+# SWAGGER SETTINGS
+
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'Basic': {
+            'type': 'basic'
+        }
+    }
+}

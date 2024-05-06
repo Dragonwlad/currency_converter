@@ -1,6 +1,8 @@
 '''Константы для криптовалют.'''
 
-UPDATE_INTERVAL_MINUTES = 60
+FIAT_UPDATE_INTERVAL_MINUTES = 1200
+CRYPTO_UPDATE_INTERVAL_MINUTES = 60
+
 TYPE_CURRENCY = (
     ('Fiat', 'fiat'),
     ('Crypto', 'crypto')
