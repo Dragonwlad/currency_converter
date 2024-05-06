@@ -6,12 +6,26 @@ class EchangeRateToUsdListSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = EchangeRateToUsd
-        fields = ('currency', 'rate', 'flowrate24', 'last_update', )
+        fields = ('rate', 'flowrate24', 'last_update', )
 
 
 class CurrencyListSerializer(serializers.ModelSerializer):
-    echangerate = EchangeRateToUsdListSerializer(many=True)
+    echangerate = serializers.SerializerMethodField()
     
     class Meta:
         model = Currency
-        fields = ('name', 'name_ru', 'code', 'url_image', 'echangerate', )
+        fields = ('name', 'name_ru', 'code', 'url_image', 'type', 'echangerate', )
+
+    def get_echangerate(self, obj):
+        """ Returns latest change rate."""
+
+        return EchangeRateToUsdListSerializer(obj.echangerate.latest()).data
+
+
+class CurrencyDetailSerializer(serializers.ModelSerializer):
+    echangerate = EchangeRateToUsdListSerializer(many=True)
+
+    class Meta:
+        model = Currency
+        fields = ('name', 'name_ru', 'code', 'url_image', 'type', 'echangerate', )
+

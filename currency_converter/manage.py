@@ -3,6 +3,10 @@
 import os
 import sys
 
+# from config import configure_logger
+#
+# configure_logger()
+
 
 def main():
     """Run administrative tasks."""

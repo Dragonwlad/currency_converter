@@ -1,0 +1,25 @@
+server_host: 0.0.0.0
+server_port: 8090
+allow_credentials: true
+allow_headers: '*'
+allow_methods: '*'
+allow_origins: '*'
+
+
+# ----------LOGGING---------
+# The following log levels are supported:
+# 50 - CRITICAL
+# 40 - ERROR
+# 30 - WARNING
+# 20 - INFO
+# 10 - DEBUG
+# 0 - NOTSET
+log_level: 10
+# The following file size types are supported:
+#  B - bytes,
+#  K - kilobytes,
+#  M - megabytes,
+#  G - gigabytes,
+#  example: '100M'
+log_size: 10M
+log_backup_count: 3
