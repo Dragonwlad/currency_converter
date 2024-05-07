@@ -1,8 +1,7 @@
 from rest_framework import viewsets, mixins
 
 from api.serializers import CurrencyListSerializer, CurrencyDetailSerializer
-from currency.models import Currency
-
+from currency.models.currency import Currency
 
 
 class CurrencyViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.RetrieveModelMixin):

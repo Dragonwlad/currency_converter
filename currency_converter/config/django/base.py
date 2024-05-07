@@ -10,14 +10,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('SECRET_KEY', default='django-insecure-secret_key')
 
-DEBUG = True # os.getenv('DEBUG', default='False') == 'True'
+DEBUG = os.getenv('DEBUG', default='False') == 'True'
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS',
-                          default='127.0.0.1,localhost').split(',')
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', default='127.0.0.1,localhost').split(',')
 
-AUTH_USER_MODEL = 'users.User'
+LOCAL_APPS = [
+    'users.apps.UsersConfig',
+    'api.apps.ApiConfig',
+    'currency.apps.CurrencyConfig',
+    'scheduler.apps.SchedulerConfig',
 
-# Application definition
+]
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -26,14 +29,12 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    # 3-th party apps
     'rest_framework',
     'django_apscheduler',
     'drf_yasg',
-    'users.apps.UsersConfig',
-    'api.apps.ApiConfig',
-    'currency.apps.CurrencyConfig',
-    'scheduler.apps.SchedulerConfig',
-
+    # local apps
+    *LOCAL_APPS,
 ]
 
 MIDDLEWARE = [
@@ -46,7 +47,9 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'currency_converter.urls'
+ROOT_URLCONF = 'config.urls'
+
+AUTH_USER_MODEL = 'users.User'
 
 TEMPLATES = [
     {
@@ -64,10 +67,9 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'currency_converter.wsgi.application'
+WSGI_APPLICATION = 'config.wsgi.application'
 
-
-# Database
+# ================================== DATABASE ==================================
 
 DATABASES = {
     'default': {
@@ -75,17 +77,6 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
-# DATABASES = {
-#         'default': {
-#             'ENGINE': 'django.db.backends.postgresql',
-#             'NAME': os.getenv('POSTGRES_DB', 'django'),
-#             'USER': os.getenv('POSTGRES_USER', 'django'),
-#             'PASSWORD': os.getenv('POSTGRES_PASSWORD', ''),
-#             'HOST': os.getenv('DB_HOST', ''),
-#             'PORT': os.getenv('DB_PORT', 5432),
-#         }
-#     }
 
 
 # Password validation
@@ -106,7 +97,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
 
@@ -118,21 +108,9 @@ USE_I18N = True
 
 USE_TZ = True
 
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/4.2/howto/static-files/
-
-STATIC_URL = '/static/'
-
-STATIC_ROOT = BASE_DIR / '/collected_static'
-
-# Default primary key field type
-# https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
-
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-DATA_UPLOAD_MAX_NUMBER_FIELDS = 10240
-
+# ================================== REST_API ==================================
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
@@ -143,19 +121,20 @@ REST_FRAMEWORK = {
     ],
 }
 
-# APSCHEDULER SETTINGS
+# ================================== STATIC/MEDIA ==================================
 
-APSCHEDULER_DATETIME_FORMAT = "N j, Y, f:s a"
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATIC_URL = '/static/'
 
-APSCHEDULER_RUN_NOW_TIMEOUT = 25  # Seconds
+MEDIA_ROOT_NAME = 'media'
+MEDIA_ROOT = BASE_DIR / MEDIA_ROOT_NAME
+MEDIA_URL = f'/{MEDIA_ROOT_NAME}/'
 
 
-# SWAGGER SETTINGS
+# ================================== COMPONENTS/CONSTANTS ==========================
 
-SWAGGER_SETTINGS = {
-    'SECURITY_DEFINITIONS': {
-        'Basic': {
-            'type': 'basic'
-        }
-    }
-}
+from config.components.apscheduler import *  # noqa
+from config.components.logging import *      # noqa
+from config.components.swagger import *      # noqa
+
+from config.constans import *                # noqa

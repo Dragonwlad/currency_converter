@@ -4,7 +4,7 @@
 
 
 ## Технологии
-* Backand: Django REST API, Stripe, Docker, NGINX
+* Backand: Django REST API, Docker, NGINX
 
 ## В состав проекта входят 2 контейнера:
 

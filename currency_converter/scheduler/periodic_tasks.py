@@ -1,14 +1,16 @@
 """Модуль вызова периодических задач."""
+import logging
 import requests
 import json
 
 from apscheduler.schedulers.background import BackgroundScheduler
-from currency_converter.constans import (
+from config.constans import (
     CRYPTO, FIAT, TYPE_CURRENCY, CRYPTO_URL, FIAT_URL, FIAT_FROM_CRYPTOCOMPARE, FIAT_UPDATE_INTERVAL_MINUTES,
     CRYPTO_UPDATE_INTERVAL_MINUTES
 )
 
 scheduler = BackgroundScheduler()
+logger = logging.getLogger(__name__)
 
 
 @scheduler.scheduled_job('interval', minutes=CRYPTO_UPDATE_INTERVAL_MINUTES, name='crypto_update_scheduled_job')
@@ -16,9 +18,8 @@ def crypto_update_exchange_rate():
     """
     Фоновая задача для запроса курса крипты и обновления данных в БД. В случае отсутствия валюты и курса, они создаются.
     """
-    from currency.models import Currency, EchangeRateToUsd
-
-    print('Фоновая задача для запроса кура крипты запущена!')
+    from currency.models import currency, EchangeRateToUsd
+    logger.info('Запущена периодическая задача для запроса курса крипты.')
 
     values = ''
     for key in CRYPTO.keys():
@@ -32,7 +33,7 @@ def crypto_update_exchange_rate():
         currencyes = json.loads(json_currencyes_from_api)
         currencyes = currencyes.get('RAW', None)
     except Exception as error:
-        print('Ошибка при получении курса валют:', error)
+        logger.warning(f'Ошибка при получении курса валют: {error}')
 
     if currencyes:
         bulk_list_change = []
@@ -65,12 +66,12 @@ def crypto_update_exchange_rate():
     print('Курс крипты обновлен и записан в БД!')
 
 
-@scheduler.scheduled_job('interval', hour=FIAT_UPDATE_INTERVAL_MINUTES, name='fiat_update_scheduled_job')
+@scheduler.scheduled_job('interval', minutes=FIAT_UPDATE_INTERVAL_MINUTES, name='fiat_update_scheduled_job')
 def fiat_update_exchange_rate():
     """
     Фоновая задача для запроса курса фиатов и обновления данных в БД. В случае отсутствия валюты и курса, они создаются.
     """
-    from currency.models import Currency, EchangeRateToUsd
+    from currency.models import currency, EchangeRateToUsd
 
     print('Фоновая задача для запроса кура фиата запущена!')
     currencyes = None
