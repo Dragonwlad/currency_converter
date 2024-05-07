@@ -18,7 +18,8 @@ def crypto_update_exchange_rate():
     """
     Фоновая задача для запроса курса крипты и обновления данных в БД. В случае отсутствия валюты и курса, они создаются.
     """
-    from currency.models import currency, EchangeRateToUsd
+    from currency.models.currency import Currency
+    from currency.models.currency_echangerate import CurrencyEchangeRate
     logger.info('Запущена периодическая задача для запроса курса крипты.')
 
     values = ''
@@ -46,13 +47,13 @@ def crypto_update_exchange_rate():
                 type=TYPE_CURRENCY[1][0]
             )
             if created:
-                EchangeRateToUsd.objects.create(
+                CurrencyEchangeRate.objects.create(
                     currency=currency,
                     rate=currency_info['PRICE'],
                     flowrate24=currency_info['CHANGE24HOUR'],
                 )
             else:
-                exchanges = EchangeRateToUsd.objects.filter(currency=currency)
+                exchanges = CurrencyEchangeRate.objects.filter(currency=currency)
                 if exchanges:
                     exchange = exchanges[0]
 
@@ -61,7 +62,7 @@ def crypto_update_exchange_rate():
                     bulk_list_change.append(exchange)
 
         if bulk_list_change:
-            EchangeRateToUsd.objects.bulk_update(bulk_list_change, ['rate', 'flowrate24'])
+            CurrencyEchangeRate.objects.bulk_update(bulk_list_change, ['rate', 'flowrate24'])
         print('Курс крипты обновлен и записан в БД!')
     print('Курс крипты обновлен и записан в БД!')
 
@@ -71,7 +72,8 @@ def fiat_update_exchange_rate():
     """
     Фоновая задача для запроса курса фиатов и обновления данных в БД. В случае отсутствия валюты и курса, они создаются.
     """
-    from currency.models import currency, EchangeRateToUsd
+    from currency.models.currency import Currency
+    from currency.models.currency_echangerate import CurrencyEchangeRate
 
     print('Фоновая задача для запроса кура фиата запущена!')
     currencyes = None
@@ -94,14 +96,14 @@ def fiat_update_exchange_rate():
 
             )
             if created:
-                EchangeRateToUsd.objects.create(
+                CurrencyEchangeRate.objects.create(
                     currency=currency,
                     rate=valute['Value'],
                     flowrate24=abs(valute['Previous'] - valute['Value']),
                 )
 
             else:
-                exchanges = EchangeRateToUsd.objects.filter(currency=currency)
+                exchanges = CurrencyEchangeRate.objects.filter(currency=currency)
                 if exchanges:
                     exchange = exchanges[0]
                     exchange.rate = valute['Value']
@@ -109,7 +111,7 @@ def fiat_update_exchange_rate():
                     bulk_list_change.append(exchange)
 
         if bulk_list_change:
-            EchangeRateToUsd.objects.bulk_update(bulk_list_change, ['rate', 'flowrate24'])
+            CurrencyEchangeRate.objects.bulk_update(bulk_list_change, ['rate', 'flowrate24'])
         print('Курс фиатов обновлен и записан в БД!')
 
     print('fiat_update_scheduled_job_finish!')
