@@ -1,13 +1,13 @@
 """Модуль вызова периодических задач."""
-import logging
-import requests
 import json
+import logging
 
+import requests
 from apscheduler.schedulers.background import BackgroundScheduler
-from config.constans import (
-    CRYPTO, FIAT, TYPE_CURRENCY, CRYPTO_URL, FIAT_URL, FIAT_FROM_CRYPTOCOMPARE, FIAT_UPDATE_INTERVAL_MINUTES,
-    CRYPTO_UPDATE_INTERVAL_MINUTES
-)
+from config.constans import (CRYPTO, CRYPTO_UPDATE_INTERVAL_MINUTES,
+                             CRYPTO_URL, FIAT, FIAT_FROM_CRYPTOCOMPARE,
+                             FIAT_UPDATE_INTERVAL_MINUTES, FIAT_URL,
+                             TYPE_CURRENCY)
 
 scheduler = BackgroundScheduler()
 logger = logging.getLogger(__name__)

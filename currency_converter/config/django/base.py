@@ -134,7 +134,6 @@ MEDIA_URL = f'/{MEDIA_ROOT_NAME}/'
 # ================================== COMPONENTS/CONSTANTS ==========================
 
 from config.components.apscheduler import *  # noqa
-from config.components.logging import *      # noqa
-from config.components.swagger import *      # noqa
-
-from config.constans import *                # noqa
+from config.components.logging import *  # noqa
+from config.components.swagger import *  # noqa
+from config.constans import *  # noqa

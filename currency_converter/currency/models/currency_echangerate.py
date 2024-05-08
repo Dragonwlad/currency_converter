@@ -1,8 +1,6 @@
+from currency.models.currency import Currency
 from django.contrib.auth import get_user_model
 from django.db import models
-
-from currency.models.currency import Currency
-
 
 User = get_user_model()
 

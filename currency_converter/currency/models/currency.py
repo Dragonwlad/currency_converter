@@ -1,7 +1,6 @@
+from config.constans import TYPE_CURRENCY
 from django.contrib.auth import get_user_model
 from django.db import models
-
-from config.constans import TYPE_CURRENCY
 
 User = get_user_model()
 
