@@ -1,8 +1,8 @@
 '''Константы для криптовалют.'''
 from django.conf import settings
 
-FIAT_UPDATE_INTERVAL_MINUTES = 1200 if not settings.DEBUG else 1
-CRYPTO_UPDATE_INTERVAL_MINUTES = 60 if not settings.DEBUG else 1
+FIAT_UPDATE_INTERVAL_MINUTES = 1  # 1200 if not settings.DEBUG else 1
+CRYPTO_UPDATE_INTERVAL_MINUTES = 1  # 60 if not settings.DEBUG else 1
 
 TYPE_CURRENCY = (
     ('Fiat', 'fiat'),
