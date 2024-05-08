@@ -16,7 +16,7 @@ API сервис с автоматическим парсингом курса �
 
 Установить версию питона:
 
-`sudo apt install python3.9-venv`
+`sudo apt install python3.12-venv`
 
 `python -m venv venv`
 
