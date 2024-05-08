@@ -1,10 +1,15 @@
+import  logging
 from rest_framework import viewsets, mixins
 
 from api.serializers import CurrencyListSerializer, CurrencyDetailSerializer
 from currency.models.currency import Currency
 
 
+logger = logging.getLogger(__name__)
+
+
 class CurrencyViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.RetrieveModelMixin):
+    """Вьюсет для получения списка криптовалют."""
     queryset = Currency.objects.all()
     serializer_class = CurrencyListSerializer
 

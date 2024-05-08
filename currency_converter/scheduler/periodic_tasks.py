@@ -64,7 +64,6 @@ def crypto_update_exchange_rate():
         if bulk_list_change:
             CurrencyEchangeRate.objects.bulk_update(bulk_list_change, ['rate', 'flowrate24'])
         print('Курс крипты обновлен и записан в БД!')
-    print('Курс крипты обновлен и записан в БД!')
 
 
 @scheduler.scheduled_job('interval', minutes=FIAT_UPDATE_INTERVAL_MINUTES, name='fiat_update_scheduled_job')
@@ -75,14 +74,14 @@ def fiat_update_exchange_rate():
     from currency.models.currency import Currency
     from currency.models.currency_echangerate import CurrencyEchangeRate
 
-    print('Фоновая задача для запроса кура фиата запущена!')
+    logger.info('Запущена периодическая задача для запроса курса фиата.')
     currencyes = None
     try:
         json_currencies_from_api = requests.get(FIAT_URL).text
         currencyes = json.loads(json_currencies_from_api)
         currencyes = currencyes.get('Valute', None)
     except Exception as error:
-        print('Ошибка при получении курса валют:', error)
+        logger.warning(f'Ошибка при получении курса валют: {error}')
 
     if currencyes:
 
@@ -112,6 +111,5 @@ def fiat_update_exchange_rate():
 
         if bulk_list_change:
             CurrencyEchangeRate.objects.bulk_update(bulk_list_change, ['rate', 'flowrate24'])
-        print('Курс фиатов обновлен и записан в БД!')
 
-    print('fiat_update_scheduled_job_finish!')
+    print('Курс фиатов обновлен и записан в БД!')
