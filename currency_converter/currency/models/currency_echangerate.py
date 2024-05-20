@@ -12,7 +12,7 @@ class CurrencyEchangeRate(models.Model):
                                  )
     rate = models.FloatField(verbose_name='Он же PRICE', null=True)
     flowrate24 = models.FloatField(verbose_name='Он же CHANGE24HOUR', null=True)
-    last_update = models.DateTimeField(auto_now_add=True, editable=False)
+    last_update = models.DateTimeField(auto_now=True)
 
     class Meta:
         """Метаданные модели."""
