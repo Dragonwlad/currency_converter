@@ -1,6 +1,7 @@
 """Модуль с конфигом приложения scheduler."""
 
 from django.apps import AppConfig
+
 from scheduler.periodic_tasks import scheduler
 
 

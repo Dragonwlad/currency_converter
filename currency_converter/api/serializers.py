@@ -1,6 +1,9 @@
+from typing import Any, Dict
+
+from rest_framework import serializers
+
 from currency.models.currency import Currency
 from currency.models.currency_echangerate import CurrencyEchangeRate
-from rest_framework import serializers
 
 
 class CurrencyEchangeRateListSerializer(serializers.ModelSerializer):
@@ -17,7 +20,8 @@ class CurrencyListSerializer(serializers.ModelSerializer):
         model = Currency
         fields = ('name', 'name_ru', 'code', 'url_image', 'type', 'echangerate', )
 
-    def get_echangerate(self, obj):
+    @staticmethod
+    def get_echangerate(obj: Currency) -> Dict[str, Any]:
         """ Returns latest change rate."""
 
         return CurrencyEchangeRateListSerializer(obj.echangerate.latest()).data

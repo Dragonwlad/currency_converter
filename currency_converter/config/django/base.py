@@ -14,6 +14,11 @@ DEBUG = os.getenv('DEBUG', default='True') == 'True'
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', default='127.0.0.1,localhost').split(',')
 
+# Currency
+NAME_MAX_LENGTH = 50
+
+ISO_CODE_LENGTH = 3
+
 LOCAL_APPS = [
     'users.apps.UsersConfig',
     'api.apps.ApiConfig',

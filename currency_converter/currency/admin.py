@@ -1,6 +1,7 @@
+from django.contrib import admin
+
 from currency.models.currency import Currency
 from currency.models.currency_echangerate import CurrencyEchangeRate
-from django.contrib import admin
 
 
 class CurrencyEchangeRateInLine(admin.TabularInline):
@@ -9,7 +10,7 @@ class CurrencyEchangeRateInLine(admin.TabularInline):
 
 
 @admin.register(Currency)
-class Currency(admin.ModelAdmin):
+class CurrencyAdmin(admin.ModelAdmin):
     inlines = [CurrencyEchangeRateInLine, ]
 
 

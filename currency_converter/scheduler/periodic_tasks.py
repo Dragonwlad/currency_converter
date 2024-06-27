@@ -4,17 +4,17 @@ import logging
 
 import requests
 from apscheduler.schedulers.background import BackgroundScheduler
-from config.constans import (CRYPTO, CRYPTO_UPDATE_INTERVAL_MINUTES,
-                             CRYPTO_URL, FIAT, FIAT_FROM_CRYPTOCOMPARE,
-                             FIAT_UPDATE_INTERVAL_MINUTES, FIAT_URL,
-                             TYPE_CURRENCY)
+from config.constans import (
+    CRYPTO, CRYPTO_UPDATE_INTERVAL_MINUTES, CRYPTO_URL, FIAT, FIAT_FROM_CRYPTOCOMPARE, FIAT_UPDATE_INTERVAL_MINUTES,
+    FIAT_URL, TYPE_CURRENCY,
+)
 
 scheduler = BackgroundScheduler()
 logger = logging.getLogger(__name__)
 
 
 @scheduler.scheduled_job('interval', minutes=CRYPTO_UPDATE_INTERVAL_MINUTES, name='crypto_update_scheduled_job')
-def crypto_update_exchange_rate():
+def crypto_update_exchange_rate() -> None:
     """
     Фоновая задача для запроса курса крипты и обновления данных в БД. В случае отсутствия валюты и курса, они создаются.
     """
@@ -67,7 +67,7 @@ def crypto_update_exchange_rate():
 
 
 @scheduler.scheduled_job('interval', minutes=FIAT_UPDATE_INTERVAL_MINUTES, name='fiat_update_scheduled_job')
-def fiat_update_exchange_rate():
+def fiat_update_exchange_rate() -> None:
     """
     Фоновая задача для запроса курса фиатов и обновления данных в БД. В случае отсутствия валюты и курса, они создаются.
     """
