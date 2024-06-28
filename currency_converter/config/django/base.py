@@ -135,6 +135,8 @@ MEDIA_ROOT_NAME = 'media'
 MEDIA_ROOT = BASE_DIR / MEDIA_ROOT_NAME
 MEDIA_URL = f'/{MEDIA_ROOT_NAME}/'
 
+IMAGE_DIRECTORY = 'currency/images/'
+
 
 # ================================== COMPONENTS/CONSTANTS ==========================
 

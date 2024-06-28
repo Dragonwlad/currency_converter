@@ -1,0 +1,32 @@
+[tool.poetry]
+name = "currency_converter"
+version = "0.5.0"
+description = "Currency converter"
+authors = ["Dragonwlad"]
+readme = "README.md"
+packages = [
+    { include = "currency_converter", from = "currency_converter" },
+]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+APScheduler = "3.10.4"
+asgiref = "3.7.2"
+Django = "4.2.9"
+djangorestframework = "3.14.0"
+django_apscheduler = "0.6.2"
+mypy = "1.8.0"
+mypy-extensions = "1.0.0"
+python-dotenv = "1.0.0"
+pytz = "2023.3.post1"
+sqlparse = "0.4.4"
+tomli = "2.0.1"
+typing_extensions = "4.9.0"
+tzdata = "2023.4"
+requests = "2.31.0"
+drf_yasg = "1.21.7"
+isort = "5.13.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

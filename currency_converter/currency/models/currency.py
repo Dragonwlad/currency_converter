@@ -15,6 +15,8 @@ class Currency(models.Model):
     code = models.CharField(max_length=settings.ISO_CODE_LENGTH, unique=True, verbose_name='ISO код')
     type = models.CharField(max_length=settings.NAME_MAX_LENGTH, choices=TYPE_CURRENCY, blank=True)
     url_image = models.URLField(verbose_name='Ссылка на изображение', null=True, blank=True)
+    # image = models.ImageField(upload_to=settings.IMAGE_DIRECTORY)
+    sign = currency_symbol = models.CharField(max_length=5)
 
     class Meta:
         """Метаданные модели."""
