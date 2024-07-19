@@ -1,5 +1,4 @@
 '''Константы для криптовалют.'''
-from django.conf import settings
 
 FIAT_UPDATE_INTERVAL_MINUTES = 1  # 1200 if not settings.DEBUG else 1
 CRYPTO_UPDATE_INTERVAL_MINUTES = 1  # 60 if not settings.DEBUG else 1
@@ -54,7 +53,6 @@ CRYPTO = {
     "WBTC": "Wrapped Bitcoin",
 }
 
-FIAT_URL = 'https://www.cbr-xml-daily.ru/daily_json.js'
 
 FIAT = {
     "RUB": "Russian Ruble",

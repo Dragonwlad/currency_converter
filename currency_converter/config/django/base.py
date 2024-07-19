@@ -19,6 +19,16 @@ NAME_MAX_LENGTH = 50
 
 ISO_CODE_LENGTH = 3
 
+
+# Data sources
+
+FIAT_URL = 'https://www.cbr-xml-daily.ru/daily_json.js'
+
+BEACON_API_KEY = 'Z0XwA6LYvN8RqGpUlM4Im4b68ZjP6h0K'
+FIAT_BEACON_URL = f'https://api.currencybeacon.com/v1/latest?api_key={BEACON_API_KEY}&base=usd&symbols=ISO_LIST_VALUTE'
+
+
+
 LOCAL_APPS = [
     'users.apps.UsersConfig',
     'api.apps.ApiConfig',

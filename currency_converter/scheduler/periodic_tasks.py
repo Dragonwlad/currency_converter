@@ -1,12 +1,12 @@
 """Модуль вызова периодических задач."""
 import json
 import logging
-
+import datetime as dt
 import requests
 from apscheduler.schedulers.background import BackgroundScheduler
 from config.constans import (
     CRYPTO, CRYPTO_UPDATE_INTERVAL_MINUTES, CRYPTO_URL, FIAT, FIAT_FROM_CRYPTOCOMPARE, FIAT_UPDATE_INTERVAL_MINUTES,
-    FIAT_URL, TYPE_CURRENCY,
+    FIAT_URL, TYPE_CURRENCY, FIAT_BEACON_URL,
 )
 
 scheduler = BackgroundScheduler()
@@ -66,7 +66,7 @@ def crypto_update_exchange_rate() -> None:
         print('Курс крипты обновлен и записан в БД!')
 
 
-@scheduler.scheduled_job('interval', minutes=FIAT_UPDATE_INTERVAL_MINUTES, name='fiat_update_scheduled_job')
+@scheduler.scheduled_job('interval', minutes=FIAT_UPDATE_INTERVAL_MINUTES, name='fiat_CB_update_scheduled_job')
 def fiat_update_exchange_rate() -> None:
     """
     Фоновая задача для запроса курса фиатов и обновления данных в БД. В случае отсутствия валюты и курса, они создаются.
@@ -75,15 +75,75 @@ def fiat_update_exchange_rate() -> None:
     from currency.models.currency_echangerate import CurrencyEchangeRate
 
     logger.info('Запущена периодическая задача для запроса курса фиата.')
-    currencyes = None
     try:
         json_currencies_from_api = requests.get(FIAT_URL).text
         currencyes = json.loads(json_currencies_from_api)
         currencyes = currencyes.get('Valute', None)
     except Exception as error:
         logger.warning(f'Ошибка при получении курса валют: {error}')
+        raise ConnectionError()
 
     if currencyes:
+
+        bulk_list_change = []
+        for valute in currencyes.values():
+            currency, created = Currency.objects.get_or_create(
+                name=FIAT[valute['CharCode']],
+                name_ru=valute['Name'],
+                code=valute['CharCode'],
+                type=TYPE_CURRENCY[0][0]
+
+            )
+            if created:
+                CurrencyEchangeRate.objects.create(
+                    currency=currency,
+                    rate=valute['Value'],
+                    flowrate24=abs(valute['Previous'] - valute['Value']),
+                )
+
+            else:
+                exchanges = CurrencyEchangeRate.objects.filter(currency=currency)
+                if exchanges:
+                    exchange = exchanges[0]
+                    exchange.rate = valute['Value']
+                    exchange.flowrate24 = abs(valute['Previous'] - valute['Value'])
+                    bulk_list_change.append(exchange)
+
+        if bulk_list_change:
+            CurrencyEchangeRate.objects.bulk_update(bulk_list_change, ['rate', 'flowrate24'])
+
+    print('Курс фиатов обновлен и записан в БД!')
+
+
+@scheduler.scheduled_job('interval', minutes=FIAT_UPDATE_INTERVAL_MINUTES, name='fiat_beacon_update_scheduled_job')
+def fiat_beacon_update_exchange_rate() -> None:
+    """
+    Фоновая задача для запроса курса фиатов и обновления данных в БД. В случае отсутствия валюты и курса, они создаются.
+    """
+    from currency.models.currency import Currency
+    from currency.models.currency_echangerate import CurrencyEchangeRate
+
+    logger.info('Запущена периодическая задача для запроса курса фиата.')
+    values = ''
+    for key in CRYPTO.keys():
+        values += key + ','
+    values = values[0:len(values) - 1]
+    url = FIAT_BEACON_URL.replace('ISO_LIST_VALUTE', values)
+
+    try:
+        json_currencies_from_api = requests.get(url).text
+        currencyes = json.loads(json_currencies_from_api)
+        currencyes = currencyes.get('Valute', None)
+
+        url += f"&date={dt.datetime.now().strftime('%Y-%m-%d')}"
+        json_currencies_from_api = requests.get(url).text
+        yesterday_currencyes = json.loads(json_currencies_from_api)
+        yesterday_currencyes = yesterday_currencyes.get('rates', None)
+    except Exception as error:
+        logger.warning(f'Ошибка при получении курса валют: {error}')
+        raise ConnectionError()
+
+    if currencyes and yesterday_currencyes:
 
         bulk_list_change = []
         for valute in currencyes.values():
