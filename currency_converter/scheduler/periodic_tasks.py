@@ -1,7 +1,10 @@
 """Модуль вызова периодических задач."""
 import json
 import logging
+import os
 import datetime as dt
+from django.core.files import File
+from django.core.files.base import ContentFile
 from typing import List, Dict
 
 import requests
@@ -9,8 +12,31 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from config.constans import CRYPTO, FIAT, TYPE_CURRENCY, FIAT_SIGN
 from django.conf import settings
 
+from currency.models.currency import Currency
+from currency.models.currency_echangerate import CurrencyEchangeRate
+
 scheduler = BackgroundScheduler()
 logger = logging.getLogger(__name__)
+
+
+def copy_static_image_to_currency(image_name: str, currency: Currency) -> None:
+    """
+    Копирует изображение из STATIC_ROOT и сохраняет его в поле image объекта Currency.
+
+    :param image_name: Имя файла изображения в STATIC_ROOT.
+    :param currency: Экземпляр модели Currency, в который будет сохранено изображение.
+    :raises FileNotFoundError: Если изображение не найдено в STATIC_ROOT.
+    """
+    # Путь к файлу в STATIC_ROOT
+    static_image_path = os.path.join(settings.STATIC_ROOT, image_name)
+
+    if os.path.exists(static_image_path):
+        # Чтение изображения и сохранение его в поле image
+        with open(static_image_path, 'rb') as f:
+            content = File(f)
+            currency.image.save(image_name, content, save=True)
+    else:
+        raise FileNotFoundError(f"Image {image_name} not found in {settings.STATIC_ROOT}")
 
 
 @scheduler.scheduled_job(
@@ -163,6 +189,7 @@ def fiat_beacon_update_exchange_rate() -> None:
                 sign=FIAT_SIGN[iso_code]
             )
             if created:
+                copy_static_image_to_currency(iso_code, currency)
                 CurrencyEchangeRate.objects.create(
                     currency=currency,
                     rate=currencies[iso_code],
