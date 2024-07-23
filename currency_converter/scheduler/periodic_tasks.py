@@ -161,7 +161,7 @@ def fiat_beacon_update_exchange_rate() -> None:
     historical_url = settings.FIAT_HISTORICAL_BEACON_URL.format(
         api_key=settings.BEACON_API_KEY,
         currencies=values,
-        date=dt.datetime.now().strftime('%Y-%m-%d')
+        date=(dt.datetime.now() - dt.timedelta(days=1)).strftime('%Y-%m-%d')
     )
     try:
         json_currencies_from_api = requests.get(url).text
