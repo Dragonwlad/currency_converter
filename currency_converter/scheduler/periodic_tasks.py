@@ -116,6 +116,7 @@ def crypto_update_exchange_rate() -> None:
 #     print('Курс фиатов обновлен и записан в БД!')
 
 
+
 @scheduler.scheduled_job(
     'interval',
     minutes=settings.FIAT_UPDATE_INTERVAL_MINUTES,
