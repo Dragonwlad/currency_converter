@@ -8,15 +8,30 @@ User = get_user_model()
 
 class Currency(models.Model):
     """Модель валюты."""
-    name = models.CharField(max_length=settings.NAME_MAX_LENGTH,
-                            verbose_name='Английское название')
-    name_ru = models.CharField(max_length=settings.NAME_MAX_LENGTH,
-                               verbose_name='Русское название')
-    code = models.CharField(max_length=settings.ISO_CODE_LENGTH, unique=True, verbose_name='ISO код')
-    type = models.CharField(max_length=settings.NAME_MAX_LENGTH, choices=TYPE_CURRENCY, blank=True)
-    url_image = models.URLField(verbose_name='Ссылка на изображение', null=True, blank=True)
+    name = models.CharField(
+        max_length=settings.NAME_MAX_LENGTH,
+        verbose_name='Английское название',
+        blank=True,
+    )
+    name_ru = models.CharField(
+        max_length=settings.NAME_MAX_LENGTH,
+        verbose_name='Русское название',
+        blank=True,
+    )
+    code = models.CharField(
+        max_length=settings.ISO_CODE_LENGTH,
+        unique=True,
+        verbose_name='ISO код',
+        blank=True,
+    )
+    type = models.CharField(
+        max_length=settings.NAME_MAX_LENGTH,
+        choices=TYPE_CURRENCY,
+        blank=True
+    )
+    url_image = models.URLField(verbose_name='Ссылка на изображение', blank=True)
     image = models.ImageField(upload_to=settings.IMAGE_DIRECTORY)
-    sign = models.CharField(max_length=5, null=True, blank=True)
+    sign = models.CharField(max_length=5, blank=True)
 
     class Meta:
         """Метаданные модели."""

@@ -7,12 +7,15 @@ mypy:
 isort:
 	isort currency_converter/.
 
-run:
+lrun:
 	python currency_converter/manage.py runserver --noreload
+
+run:
+	python currency_converter/manage.py runserver 0.0.0.0:8000
 
 dropdb:
 	@echo "Deleting SQLite database..."
-	rm -f db.sqlite3
+	rm -f currency_converter/config/db.sqlite3
 
 	@echo "Creating migrations..."
 	python currency_converter/manage.py makemigrations

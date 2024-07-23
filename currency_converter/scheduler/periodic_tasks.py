@@ -4,7 +4,6 @@ import logging
 import os
 import datetime as dt
 from django.core.files import File
-from django.core.files.base import ContentFile
 from typing import List, Dict
 
 import requests
@@ -19,15 +18,16 @@ scheduler = BackgroundScheduler()
 logger = logging.getLogger(__name__)
 
 
-def copy_static_image_to_currency(image_name: str, currency: Currency) -> None:
+def copy_static_image_to_currency(image_iso: str, currency: Currency) -> None:
     """
     Копирует изображение из STATIC_ROOT и сохраняет его в поле image объекта Currency.
 
-    :param image_name: Имя файла изображения в STATIC_ROOT.
+    :param image_iso: Имя файла изображения в STATIC_ROOT.
     :param currency: Экземпляр модели Currency, в который будет сохранено изображение.
     :raises FileNotFoundError: Если изображение не найдено в STATIC_ROOT.
     """
     # Путь к файлу в STATIC_ROOT
+    image_name = f'{image_iso}.png'
     static_image_path = os.path.join(settings.STATIC_ROOT, image_name)
 
     if os.path.exists(static_image_path):
@@ -36,7 +36,7 @@ def copy_static_image_to_currency(image_name: str, currency: Currency) -> None:
             content = File(f)
             currency.image.save(image_name, content, save=True)
     else:
-        raise FileNotFoundError(f"Image {image_name} not found in {settings.STATIC_ROOT}")
+        logging.warning(f"Image {image_name} not found in {settings.STATIC_ROOT}")
 
 
 @scheduler.scheduled_job(
@@ -46,12 +46,9 @@ def copy_static_image_to_currency(image_name: str, currency: Currency) -> None:
 )
 def crypto_update_exchange_rate() -> None:
     """
-    Фоновая задача для запроса курса крипты и обновления данных в БД. В случае отсутствия валюты и курса, они создаются.
+    Фоновая задача для запроса курса крипты и обновления данных в БД.
+    В случае отсутствия валюты и курса, они создаются.
     """
-    from currency.models.currency import Currency
-    from currency.models.currency_echangerate import CurrencyEchangeRate
-    logger.info('Запущена периодическая задача для запроса курса крипты.')
-
     values = ','.join(CRYPTO.keys())
     url = settings.CRYPTO_URL.replace('ISO_LIST_VALUTE', values)
     currencies = None
@@ -90,8 +87,6 @@ def crypto_update_exchange_rate() -> None:
 
         if bulk_list_change:
             CurrencyEchangeRate.objects.bulk_update(bulk_list_change, ['rate', 'flowrate24'])
-        print('Курс крипты обновлен и записан в БД!')
-
 
 # @scheduler.scheduled_job('interval', minutes=FIAT_UPDATE_INTERVAL_MINUTES, name='fiat_CB_update_scheduled_job')
 # def fiat_update_exchange_rate() -> None:
@@ -142,7 +137,6 @@ def crypto_update_exchange_rate() -> None:
 #     print('Курс фиатов обновлен и записан в БД!')
 
 
-
 @scheduler.scheduled_job(
     'interval',
     minutes=settings.FIAT_UPDATE_INTERVAL_MINUTES,
@@ -150,12 +144,9 @@ def crypto_update_exchange_rate() -> None:
 )
 def fiat_beacon_update_exchange_rate() -> None:
     """
-    Фоновая задача для запроса курса фиатов и обновления данных в БД. В случае отсутствия валюты и курса, они создаются.
+    Фоновая задача для запроса курса фиатов и обновления данных в БД.
+    В случае отсутствия валюты и курса, они создаются.
     """
-    from currency.models.currency import Currency
-    from currency.models.currency_echangerate import CurrencyEchangeRate
-
-    logger.info('Запущена периодическая задача для запроса курса фиата.')
     values = ','.join(FIAT.keys())
     url = settings.FIAT_LATEST_BEACON_URL.format(api_key=settings.BEACON_API_KEY, currencies=values)
     historical_url = settings.FIAT_HISTORICAL_BEACON_URL.format(
@@ -186,7 +177,7 @@ def fiat_beacon_update_exchange_rate() -> None:
                 # name_ru=valute['Name'],
                 code=iso_code,
                 type=TYPE_CURRENCY[0][0],
-                sign=FIAT_SIGN[iso_code]
+                sign=FIAT_SIGN.get(iso_code, None)
             )
             if created:
                 copy_static_image_to_currency(iso_code, currency)
@@ -206,5 +197,3 @@ def fiat_beacon_update_exchange_rate() -> None:
 
         if bulk_list_change:
             CurrencyEchangeRate.objects.bulk_update(bulk_list_change, ['rate', 'flowrate24'])
-
-    logger.info('Курс фиатов обновлен и записан в БД!')

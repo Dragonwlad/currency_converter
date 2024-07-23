@@ -2,8 +2,6 @@
 
 from django.apps import AppConfig
 
-from scheduler.periodic_tasks import scheduler
-
 
 class SchedulerConfig(AppConfig):
     """Конфиг класс для приложения анализатора."""
@@ -13,4 +11,6 @@ class SchedulerConfig(AppConfig):
 
     def ready(self) -> None:
         """Метод для инидиализации периодических задач."""
+        from scheduler.periodic_tasks import scheduler
+
         scheduler.start()
