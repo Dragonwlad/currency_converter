@@ -172,10 +172,7 @@ def fiat_beacon_update_exchange_rate() -> None:
         bulk_list_change: List[CurrencyEchangeRate] = []
         for iso_code in currencies.keys():
             currency, created = Currency.objects.get_or_create(
-                # name=FIAT[iso_code],
                 code=iso_code,
-                # type=TYPE_CURRENCY[0][0],
-                # sign=FIAT_SIGN.get(iso_code, None)
             )
             if created:
                 currency.name = FIAT[iso_code]
