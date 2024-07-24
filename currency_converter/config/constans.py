@@ -7,8 +7,6 @@ TYPE_CURRENCY = (
     ('Crypto', 'crypto')
 )
 
-CRYPTO_URL = 'https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ISO_LIST_VALUTE&tsyms=USD'
-
 CRYPTO = {
     "BTC": "Bitcoin",
     "ETH": "Ethereum",

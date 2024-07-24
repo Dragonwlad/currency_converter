@@ -18,7 +18,7 @@ class CurrencyListSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Currency
-        fields = ('name', 'name_ru', 'code', 'url_image', 'type', 'echangerate', )
+        fields = ('name', 'name_ru', 'code', 'url_image', 'type', 'echangerate', 'image')
 
     @staticmethod
     def get_echangerate(obj: Currency) -> Dict[str, Any]:

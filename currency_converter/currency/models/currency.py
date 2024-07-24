@@ -31,7 +31,7 @@ class Currency(models.Model):
     )
     url_image = models.URLField(verbose_name='Ссылка на изображение', blank=True)
     image = models.ImageField(upload_to=settings.IMAGE_DIRECTORY)
-    sign = models.CharField(max_length=5, blank=True)
+    sign = models.CharField(max_length=5, blank=True, null=True)
 
     class Meta:
         """Метаданные модели."""

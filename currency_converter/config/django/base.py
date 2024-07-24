@@ -24,10 +24,10 @@ CRYPTO_UPDATE_INTERVAL_MINUTES = 1  # 60 if not settings.DEBUG else 1
 
 # Data sources
 
-
-FIAT_URL = 'https://www.cbr-xml-daily.ru/daily_json.js'
-
 BEACON_API_KEY = 'Z0XwA6LYvN8RqGpUlM4Im4b68ZjP6h0K'
+
+CRYPTO_URL = 'https://min-api.cryptocompare.com/data/pricemultifull?fsyms={currencies}&tsyms=USD'
+
 FIAT_LATEST_BEACON_URL = 'https://api.currencybeacon.com/v1/latest?api_key={api_key}&base=usd&symbols={currencies}'
 FIAT_HISTORICAL_BEACON_URL = 'https://api.currencybeacon.com/v1/historical?api_key={api_key}&base=usd&symbols={currencies}&date={date}'
 

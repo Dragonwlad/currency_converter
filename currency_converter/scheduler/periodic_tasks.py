@@ -49,16 +49,15 @@ def crypto_update_exchange_rate() -> None:
     Фоновая задача для запроса курса крипты и обновления данных в БД.
     В случае отсутствия валюты и курса, они создаются.
     """
-    values = ','.join(CRYPTO.keys())
-    url = settings.CRYPTO_URL.replace('ISO_LIST_VALUTE', values)
-    currencies = None
+    url = settings.CRYPTO_URL.format(currencies=','.join(CRYPTO.keys()))
 
     try:
         json_currencies_from_api = requests.get(url).text
-        currencies = json.loads(json_currencies_from_api)
-        currencies = currencies.get('RAW', None)
     except Exception as error:
         logger.warning(f'Ошибка при получении курса валют: {error}')
+        raise ConnectionError()
+
+    currencies: Dict = json.loads(json_currencies_from_api).get('RAW', None)
 
     if currencies:
         bulk_list_change = []
@@ -173,13 +172,15 @@ def fiat_beacon_update_exchange_rate() -> None:
         bulk_list_change: List[CurrencyEchangeRate] = []
         for iso_code in currencies.keys():
             currency, created = Currency.objects.get_or_create(
-                name=FIAT[iso_code],
-                # name_ru=valute['Name'],
+                # name=FIAT[iso_code],
                 code=iso_code,
-                type=TYPE_CURRENCY[0][0],
-                sign=FIAT_SIGN.get(iso_code, None)
+                # type=TYPE_CURRENCY[0][0],
+                # sign=FIAT_SIGN.get(iso_code, None)
             )
             if created:
+                currency.name = FIAT[iso_code]
+                currency.type = TYPE_CURRENCY[0][0]
+                currency.sign = FIAT_SIGN.get(iso_code, None)
                 copy_static_image_to_currency(iso_code, currency)
                 CurrencyEchangeRate.objects.create(
                     currency=currency,
