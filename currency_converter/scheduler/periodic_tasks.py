@@ -8,14 +8,23 @@ from typing import List, Dict
 
 import requests
 from apscheduler.schedulers.background import BackgroundScheduler
+from requests import Response
+
 from config.constans import CRYPTO, FIAT, TYPE_CURRENCY, FIAT_SIGN
 from django.conf import settings
 
 from currency.models.currency import Currency
 from currency.models.currency_echangerate import CurrencyEchangeRate
+from currency.utils import reconnect_decorator
 
 scheduler = BackgroundScheduler()
 logger = logging.getLogger(__name__)
+
+
+@reconnect_decorator
+def get_request(url: str) -> Response:
+    """Get response from URL."""
+    return requests.get(url)
 
 
 def copy_static_image_to_currency(image_iso: str, currency: Currency) -> None:
@@ -50,14 +59,7 @@ def crypto_update_exchange_rate() -> None:
     В случае отсутствия валюты и курса, они создаются.
     """
     url = settings.CRYPTO_URL.format(currencies=','.join(CRYPTO.keys()))
-
-    try:
-        json_currencies_from_api = requests.get(url).text
-    except Exception as error:
-        logger.warning(f'Ошибка при получении курса валют: {error}')
-        raise ConnectionError()
-
-    currencies: Dict = json.loads(json_currencies_from_api).get('RAW', None)
+    currencies: Dict = json.loads(get_request(url).text).get('RAW', None)
 
     if currencies:
         bulk_list_change = []
@@ -153,19 +155,10 @@ def fiat_beacon_update_exchange_rate() -> None:
         currencies=values,
         date=(dt.datetime.now() - dt.timedelta(days=1)).strftime('%Y-%m-%d')
     )
-    try:
-        json_currencies_from_api = requests.get(url).text
-    except Exception as error:
-        logger.warning(f'Ошибка при получении курса валют: {error}')
-        raise ConnectionError()
-    currencies: Dict[str, int] = json.loads(json_currencies_from_api).get('response', None).get('rates', None)
+    currencies: Dict[str, int] = json.loads(get_request(url).text).get('response', None).get('rates', None)
 
-    try:
-        json_currencies_from_api = requests.get(historical_url).text
-    except Exception as error:
-        logger.warning(f'Ошибка при получении курса валют: {error}')
-        raise ConnectionError()
-    yesterday_currencies: Dict[str, int] = json.loads(json_currencies_from_api).get('response', None).get('rates', None)
+    yesterday_currencies: Dict[str, int] = json.loads(
+        get_request(historical_url).text).get('response', None).get('rates', None)
 
     if currencies and yesterday_currencies:
 
@@ -191,6 +184,7 @@ def fiat_beacon_update_exchange_rate() -> None:
                     exchange = exchanges[0]
                     exchange.rate = currencies[iso_code]
                     exchange.flowrate24 = yesterday_currencies[iso_code]
+                    exchange.last_update = dt.datetime.now()
                     bulk_list_change.append(exchange)
 
         if bulk_list_change:
