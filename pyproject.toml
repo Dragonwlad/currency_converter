@@ -5,7 +5,7 @@ description = "Currency converter"
 authors = ["Dragonwlad"]
 readme = "README.md"
 packages = [
-    { include = "currency_converter", from = "currency_converter" },
+    { include = "currency_converter" },
 ]
 
 [tool.poetry.dependencies]
@@ -26,6 +26,7 @@ tzdata = "2023.4"
 requests = "2.31.0"
 drf_yasg = "1.21.7"
 isort = "5.13.2"
+pillow = "^10.4.0"
 
 [build-system]
 requires = ["poetry-core"]

@@ -1,17 +1,16 @@
 """Модуль вызова периодических задач."""
+import datetime as dt
 import json
 import logging
 import os
-import datetime as dt
-from django.core.files import File
-from typing import List, Dict
+from typing import Dict, List
 
 import requests
 from apscheduler.schedulers.background import BackgroundScheduler
-from requests import Response
-
-from config.constans import CRYPTO, FIAT, TYPE_CURRENCY, FIAT_SIGN
+from config.constans import CRYPTO, FIAT, FIAT_SIGN, TYPE_CURRENCY
 from django.conf import settings
+from django.core.files import File
+from requests import Response
 
 from currency.models.currency import Currency
 from currency.models.currency_echangerate import CurrencyEchangeRate
@@ -21,7 +20,7 @@ scheduler = BackgroundScheduler()
 logger = logging.getLogger(__name__)
 
 
-@reconnect_decorator
+@reconnect_decorator()
 def get_request(url: str) -> Response:
     """Get response from URL."""
     return requests.get(url)
@@ -59,19 +58,21 @@ def crypto_update_exchange_rate() -> None:
     В случае отсутствия валюты и курса, они создаются.
     """
     url = settings.CRYPTO_URL.format(currencies=','.join(CRYPTO.keys()))
-    currencies: Dict = json.loads(get_request(url).text).get('RAW', None)
+    response = get_request(url)
+    currencies: Dict = json.loads(response.text).get('RAW', None)
 
     if currencies:
         bulk_list_change = []
-        for valute, usd_currency in currencies.items():
+        for iso_code, usd_currency in currencies.items():
             currency_info = usd_currency.get('USD', None)
             currency, created = Currency.objects.get_or_create(
-                code=valute,
-                name=CRYPTO[valute],
+                code=iso_code,
+                name=CRYPTO[iso_code],
                 url_image=currency_info['IMAGEURL'],
                 type=TYPE_CURRENCY[1][0]
             )
             if created:
+                copy_static_image_to_currency(iso_code, currency)
                 CurrencyEchangeRate.objects.create(
                     currency=currency,
                     rate=currency_info['PRICE'],
@@ -88,54 +89,6 @@ def crypto_update_exchange_rate() -> None:
 
         if bulk_list_change:
             CurrencyEchangeRate.objects.bulk_update(bulk_list_change, ['rate', 'flowrate24'])
-
-# @scheduler.scheduled_job('interval', minutes=FIAT_UPDATE_INTERVAL_MINUTES, name='fiat_CB_update_scheduled_job')
-# def fiat_update_exchange_rate() -> None:
-#     """
-#     Фоновая задача для запроса курса фиатов и обновления данных в БД. В случае отсутствия валюты и курса, они создаются.
-#     """
-#     from currency.models.currency import Currency
-#     from currency.models.currency_echangerate import CurrencyEchangeRate
-#
-#     logger.info('Запущена периодическая задача для запроса курса фиата.')
-#     try:
-#         json_currencies_from_api = requests.get(settings.FIAT_URL).text
-#         currencyes = json.loads(json_currencies_from_api)
-#         currencyes = currencyes.get('Valute', None)
-#     except Exception as error:
-#         logger.warning(f'Ошибка при получении курса валют: {error}')
-#         raise ConnectionError()
-#
-#     if currencyes:
-#
-#         bulk_list_change = []
-#         for valute in currencyes.values():
-#             currency, created = Currency.objects.get_or_create(
-#                 name=FIAT[valute['CharCode']],
-#                 name_ru=valute['Name'],
-#                 code=valute['CharCode'],
-#                 type=TYPE_CURRENCY[0][0]
-#
-#             )
-#             if created:
-#                 CurrencyEchangeRate.objects.create(
-#                     currency=currency,
-#                     rate=valute['Value'],
-#                     flowrate24=abs(valute['Previous'] - valute['Value']),
-#                 )
-#
-#             else:
-#                 exchanges = CurrencyEchangeRate.objects.filter(currency=currency)
-#                 if exchanges:
-#                     exchange = exchanges[0]
-#                     exchange.rate = valute['Value']
-#                     exchange.flowrate24 = abs(valute['Previous'] - valute['Value'])
-#                     bulk_list_change.append(exchange)
-#
-#         if bulk_list_change:
-#             CurrencyEchangeRate.objects.bulk_update(bulk_list_change, ['rate', 'flowrate24'])
-#
-#     print('Курс фиатов обновлен и записан в БД!')
 
 
 @scheduler.scheduled_job(
@@ -155,7 +108,8 @@ def fiat_beacon_update_exchange_rate() -> None:
         currencies=values,
         date=(dt.datetime.now() - dt.timedelta(days=1)).strftime('%Y-%m-%d')
     )
-    currencies: Dict[str, int] = json.loads(get_request(url).text).get('response', None).get('rates', None)
+    response = get_request(url)
+    currencies: Dict[str, int] = json.loads(response.text).get('response', None).get('rates', None)
 
     yesterday_currencies: Dict[str, int] = json.loads(
         get_request(historical_url).text).get('response', None).get('rates', None)
@@ -182,7 +136,7 @@ def fiat_beacon_update_exchange_rate() -> None:
                 exchanges = CurrencyEchangeRate.objects.filter(currency=currency)
                 if exchanges:
                     exchange = exchanges[0]
-                    exchange.rate = currencies[iso_code]
+                    exchange.rate = 1 / currencies[iso_code]
                     exchange.flowrate24 = yesterday_currencies[iso_code]
                     exchange.last_update = dt.datetime.now()
                     bulk_list_change.append(exchange)
