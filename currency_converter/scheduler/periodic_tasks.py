@@ -10,6 +10,7 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from config.constans import CRYPTO, FIAT, FIAT_SIGN, TYPE_CURRENCY
 from django.conf import settings
 from django.core.files import File
+from django.utils import timezone
 from requests import Response
 
 from currency.models.currency import Currency
@@ -79,12 +80,11 @@ def crypto_update_exchange_rate() -> None:
                     flowrate24=currency_info['CHANGE24HOUR'],
                 )
             else:
-                exchanges = CurrencyEchangeRate.objects.filter(currency=currency)
-                if exchanges:
-                    exchange = exchanges[0]
-
+                exchange = currency.echangerate.first()
+                if exchange:
                     exchange.rate = currency_info['PRICE']
                     exchange.flowrate24 = currency_info['CHANGE24HOUR']
+                    exchange.last_update = timezone.now()
                     bulk_list_change.append(exchange)
 
         if bulk_list_change:
@@ -101,12 +101,13 @@ def fiat_beacon_update_exchange_rate() -> None:
     Фоновая задача для запроса курса фиатов и обновления данных в БД.
     В случае отсутствия валюты и курса, они создаются.
     """
+    # settings.FIAT_LATEST_BEACON_URL
     values = ','.join(FIAT.keys())
     url = settings.FIAT_LATEST_BEACON_URL.format(api_key=settings.BEACON_API_KEY, currencies=values)
     historical_url = settings.FIAT_HISTORICAL_BEACON_URL.format(
         api_key=settings.BEACON_API_KEY,
         currencies=values,
-        date=(dt.datetime.now() - dt.timedelta(days=1)).strftime('%Y-%m-%d')
+        date=(timezone.now() - dt.timedelta(days=1)).strftime('%Y-%m-%d')
     )
     response = get_request(url)
     currencies: Dict[str, int] = json.loads(response.text).get('response', None).get('rates', None)
@@ -118,6 +119,8 @@ def fiat_beacon_update_exchange_rate() -> None:
 
         bulk_list_change: List[CurrencyEchangeRate] = []
         for iso_code in currencies.keys():
+            rate = 1 / currencies[iso_code]
+            flowrate24 = 1 / yesterday_currencies[iso_code]
             currency, created = Currency.objects.get_or_create(
                 code=iso_code,
             )
@@ -128,18 +131,20 @@ def fiat_beacon_update_exchange_rate() -> None:
                 copy_static_image_to_currency(iso_code, currency)
                 CurrencyEchangeRate.objects.create(
                     currency=currency,
-                    rate=currencies[iso_code],
-                    flowrate24=yesterday_currencies[iso_code],
+                    rate=rate,
+                    flowrate24=rate - flowrate24,
                 )
 
             else:
-                exchanges = CurrencyEchangeRate.objects.filter(currency=currency)
-                if exchanges:
-                    exchange = exchanges[0]
-                    exchange.rate = 1 / currencies[iso_code]
-                    exchange.flowrate24 = yesterday_currencies[iso_code]
-                    exchange.last_update = dt.datetime.now()
+                exchange = currency.echangerate.first()
+                if exchange:
+                    exchange.rate = rate
+                    exchange.flowrate24 = rate - flowrate24
+                    exchange.last_update = timezone.now()
                     bulk_list_change.append(exchange)
 
         if bulk_list_change:
-            CurrencyEchangeRate.objects.bulk_update(bulk_list_change, ['rate', 'flowrate24'])
+            CurrencyEchangeRate.objects.bulk_update(
+                bulk_list_change,
+                ['rate', 'flowrate24', 'last_update']
+            )

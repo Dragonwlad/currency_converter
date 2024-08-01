@@ -5,27 +5,30 @@ from django.db import models
 
 User = get_user_model()
 
+NAME_MAX_LENGTH = 50
+ISO_CODE_LENGTH = 3
+
 
 class Currency(models.Model):
     """Модель валюты."""
     name = models.CharField(
-        max_length=settings.NAME_MAX_LENGTH,
+        max_length=NAME_MAX_LENGTH,
         verbose_name='Английское название',
         blank=True,
     )
     name_ru = models.CharField(
-        max_length=settings.NAME_MAX_LENGTH,
+        max_length=NAME_MAX_LENGTH,
         verbose_name='Русское название',
         blank=True,
     )
     code = models.CharField(
-        max_length=settings.ISO_CODE_LENGTH,
+        max_length=ISO_CODE_LENGTH,
         unique=True,
         verbose_name='ISO код',
         blank=True,
     )
     type = models.CharField(
-        max_length=settings.NAME_MAX_LENGTH,
+        max_length=NAME_MAX_LENGTH,
         choices=TYPE_CURRENCY,
         blank=True
     )

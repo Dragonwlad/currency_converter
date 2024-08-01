@@ -10,21 +10,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv('SECRET_KEY', default='django-insecure-secret_key')
 
-DEBUG = os.getenv('DEBUG', default='True') == 'True'
+DEBUG = os.getenv('DEBUG', default='False') == 'True'
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', default='127.0.0.1,localhost').split(',')
 
-# Currency
-NAME_MAX_LENGTH = 50
+# ================================== DATASOURCE==================================
 
-ISO_CODE_LENGTH = 3
+FIAT_UPDATE_INTERVAL_MINUTES = 60 if not DEBUG else 1
+CRYPTO_UPDATE_INTERVAL_MINUTES = 60 if not DEBUG else 1
 
-FIAT_UPDATE_INTERVAL_MINUTES = 1  # 1200 if not settings.DEBUG else 1
-CRYPTO_UPDATE_INTERVAL_MINUTES = 1  # 60 if not settings.DEBUG else 1
-
-# Data sources
-
-BEACON_API_KEY = 'Z0XwA6LYvN8RqGpUlM4Im4b68ZjP6h0K'
+BEACON_API_KEY = os.getenv('BEACON_API_KEY')
 
 CRYPTO_URL = 'https://min-api.cryptocompare.com/data/pricemultifull?fsyms={currencies}&tsyms=USD'
 
@@ -37,7 +32,6 @@ LOCAL_APPS = [
     'api.apps.ApiConfig',
     'currency.apps.CurrencyConfig',
     'scheduler.apps.SchedulerConfig',
-
 ]
 
 INSTALLED_APPS = [

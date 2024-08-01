@@ -1,12 +1,13 @@
 
-FROM python:3.9
+FROM python:3.12
 
 WORKDIR /app
 
-COPY requirements.txt .
+COPY ../requirements.txt .
+COPY .env .
 
 RUN pip install -r requirements.txt --no-cache-dir
 
 COPY . .
 
-CMD ["python", "manage.py", "runserver", "0:5000"]
+CMD ["python", "manage.py", "runserver", "0:8000"]
