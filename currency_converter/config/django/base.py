@@ -16,12 +16,13 @@ ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', default='127.0.0.1,localhost').split(
 
 # ================================== DATASOURCE==================================
 
-FIAT_UPDATE_INTERVAL_MINUTES = 60 if not DEBUG else 1
-CRYPTO_UPDATE_INTERVAL_MINUTES = 60 if not DEBUG else 1
+FIAT_UPDATE_INTERVAL_MINUTES = 30
+CRYPTO_UPDATE_INTERVAL_MINUTES = 30
 
 BEACON_API_KEY = os.getenv('BEACON_API_KEY')
+CRYPTOCOMPARE_API_KEY = os.getenv('CRYPTOCOMPARE_API_KEY')
 
-CRYPTO_URL = 'https://min-api.cryptocompare.com/data/pricemultifull?fsyms={currencies}&tsyms=USD'
+CRYPTO_URL = 'https://min-api.cryptocompare.com/data/pricemultifull?fsyms={currencies}&tsyms=USD&api_key={api_key}'
 
 FIAT_LATEST_BEACON_URL = 'https://api.currencybeacon.com/v1/latest?api_key={api_key}&base=usd&symbols={currencies}'
 FIAT_HISTORICAL_BEACON_URL = 'https://api.currencybeacon.com/v1/historical?api_key={api_key}&base=usd&symbols={currencies}&date={date}'

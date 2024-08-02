@@ -3,7 +3,7 @@ import datetime as dt
 import json
 import logging
 import os
-from typing import Dict, List
+from typing import Dict
 
 import requests
 from apscheduler.schedulers.background import BackgroundScheduler
@@ -51,14 +51,16 @@ def copy_static_image_to_currency(image_iso: str, currency: Currency) -> None:
 @scheduler.scheduled_job(
     'interval',
     minutes=settings.CRYPTO_UPDATE_INTERVAL_MINUTES,
-    name='crypto_update_scheduled_job'
+    name='crypto_update_scheduled_job',
+    next_run_time=timezone.now(),
 )
 def crypto_update_exchange_rate() -> None:
     """
     Фоновая задача для запроса курса крипты и обновления данных в БД.
     В случае отсутствия валюты и курса, они создаются.
     """
-    url = settings.CRYPTO_URL.format(currencies=','.join(CRYPTO.keys()))
+    values = ','.join(CRYPTO.keys())
+    url = settings.FIAT_LATEST_BEACON_URL.format(api_key=settings.BEACON_API_KEY, currencies=values)
     response = get_request(url)
     currencies: Dict = json.loads(response.text).get('RAW', None)
 
@@ -88,13 +90,14 @@ def crypto_update_exchange_rate() -> None:
                     bulk_list_change.append(exchange)
 
         if bulk_list_change:
-            CurrencyEchangeRate.objects.bulk_update(bulk_list_change, ['rate', 'flowrate24'])
+            CurrencyEchangeRate.objects.bulk_update(bulk_list_change, ['rate', 'flowrate24', 'last_update'])
 
 
 @scheduler.scheduled_job(
     'interval',
     minutes=settings.FIAT_UPDATE_INTERVAL_MINUTES,
-    name='fiat_beacon_update_scheduled_job'
+    name='fiat_beacon_update_scheduled_job',
+    next_run_time=timezone.now(),
 )
 def fiat_beacon_update_exchange_rate() -> None:
     """
