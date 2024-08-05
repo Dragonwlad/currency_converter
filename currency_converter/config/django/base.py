@@ -136,14 +136,14 @@ REST_FRAMEWORK = {
 
 # ================================== STATIC/MEDIA ==================================
 
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATIC_ROOT = '/var/html/staticfiles'
 STATIC_URL = '/static/'
 
 MEDIA_ROOT_NAME = 'media'
-MEDIA_ROOT = BASE_DIR / MEDIA_ROOT_NAME
+MEDIA_ROOT = '/var/html/media'
 MEDIA_URL = f'/{MEDIA_ROOT_NAME}/'
 
-IMAGE_DIRECTORY = 'currency/images/'
+IMAGE_DIRECTORY = 'var/html/media/'
 
 
 # ================================== COMPONENTS/CONSTANTS ==========================

@@ -37,7 +37,7 @@ def copy_static_image_to_currency(image_iso: str, currency: Currency) -> None:
     """
     # Путь к файлу в STATIC_ROOT
     image_name = f'{image_iso}.png'
-    static_image_path = os.path.join(settings.STATIC_ROOT, image_name)
+    static_image_path = os.path.join(f'{settings.STATIC_ROOT}/currencies', image_name)
 
     if os.path.exists(static_image_path):
         # Чтение изображения и сохранение его в поле image

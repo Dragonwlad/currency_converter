@@ -1,4 +1,5 @@
 """Модуль с конфигом приложения scheduler."""
+import sys
 
 from django.apps import AppConfig
 
@@ -11,6 +12,8 @@ class SchedulerConfig(AppConfig):
 
     def ready(self) -> None:
         """Метод для инидиализации периодических задач."""
-        from scheduler.periodic_tasks import scheduler
+        if 'runserver' not in sys.argv and 'migrate' not in sys.argv and 'createsuperuser' not in sys.argv:
 
-        scheduler.start()
+            from scheduler.periodic_tasks import scheduler
+
+            scheduler.start()

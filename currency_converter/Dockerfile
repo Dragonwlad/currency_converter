@@ -6,6 +6,8 @@ WORKDIR /app
 COPY ../requirements.txt .
 COPY .env .
 
+COPY ./config/staticfiles/* /var/html/staticfiles/currencies
+
 RUN pip install -r requirements.txt --no-cache-dir
 
 COPY . .

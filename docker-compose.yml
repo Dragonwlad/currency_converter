@@ -2,21 +2,24 @@ version: '3'
 
 volumes:
   static:
+  media:
 
 services:
 
   backend:
-    build: ./stripe_case/
+    build: ./currency_converter/
     env_file: .env
     volumes:
-      - static:/static
+      - static:/var/html/static
+      - media:/var/html/media
 
   gateway:
-    container_name: stripe_case_gateway
+    container_name: currency_converter_gateway
     build: ./nginx/
     volumes:
-      - static:/staticfiles/
+      - static:/var/html/static
+      - media:/var/html/media
     ports:
-      - 5000:80
+      - 8000:80
     depends_on:
       - backend
